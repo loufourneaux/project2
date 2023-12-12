@@ -10,7 +10,8 @@ from sklearn.decomposition import PCA
 def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_size =0.5, num_channels =3):
     """
     
-    :param model_name: 
+    :param model_name:
+    :param task_name:
     :param batchsize: 
     :param temp_size: 
     :param test_size: 
@@ -23,7 +24,6 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
     torch.cuda.manual_seed(42)
     torch.cuda.manual_seed_all(42)
 
-    #change path
     df = pd.read_parquet(r"/Users/loufourneaux/Desktop/EPFL/MA1/ML/project2/All_Relative_Results_Cleaned.parquet")
 
     df_clean = df.dropna()
@@ -33,16 +33,30 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
         Y = df_clean['Exercise']
     elif task_name == 'Task 2':
         #Fusion of the column exercise and Set to know the mistake 
-        Y = df_clean['Exercise']+ 'avec erreur'+ df_clean['Set'] 
+        Y = df_clean['Exercise']+ 'avec erreur'+ df_clean['Set']
+    else:
+        raise ValueError("Value Error: type 'Task 1' or 'Task 2' ")
     label_encoder = LabelEncoder()
     Y_encoded = label_encoder.fit_transform(Y)
 
-    if model_name == 'NN' or model_name == 'CNN':
+    if model_name == 'NN' or model_name == 'CNN' or model_name == 'RF' or model_name == 'GBC':
         index +=1
+        shuffle = True
+    elif model_name == 'GRU':
+        add_participants = df_clean['Participant']
+        add_camera = df_clean['Camera']
+        add_participants_encoded = label_encoder.fit_transform(add_participants)
+        add_camera_encoded = label_encoder.fit_transform(add_camera)
+        shuffle = False
+    else:
+        raise ValueError("Value Error: Choose a correct model name between 'NN', 'GRU', 'CNN', 'RF' or 'GBC' ")
 
     X = df_clean.iloc[:, index:]
 
-    if model_name == 'NN':
+    if model_name == 'NN' or model_name == 'RF' or model_name == 'GBC':
+        X_tensor = torch.tensor(X.values, dtype=torch.float32)
+    elif model_name=='GRU':
+        X = X.assign(add_participants_encoded=add_participants_encoded, add_camera_encoded=add_camera_encoded)
         X_tensor = torch.tensor(X.values, dtype=torch.float32)
 
     elif model_name =='CNN':
@@ -98,8 +112,8 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
     train_dataset = TensorDataset(X_train,Y_train)
     #validation_dataset = TensorDataset(X_validation,Y_validation)
     test_dataset = TensorDataset(X_test,Y_test)
-    trainLoader = DataLoader(train_dataset, batch_size=batchsize, shuffle=True)
-    #validationLoader = DataLoader(validation_dataset,batch_size=batchsize,shuffle=True)
-    testLoader = DataLoader(test_dataset, batch_size=batchsize , shuffle=True)
+    trainLoader = DataLoader(train_dataset, batch_size=batchsize, shuffle=shuffle)
+    #validationLoader = DataLoader(validation_dataset,batch_size=batchsize,shuffle=shuffle)
+    testLoader = DataLoader(test_dataset, batch_size=batchsize , shuffle=shuffle)
 
     return trainLoader,testLoader, X_validation, Y_validation
