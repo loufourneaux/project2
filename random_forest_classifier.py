@@ -3,7 +3,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import accuracy_score
 
-def GDB_cv(trainLoader, testLoader, cv=5, n_estimators=100, random_state=100):
+def RF_cv(trainLoader, testLoader, cv=5, n_estimators=100, random_state=100):
     # Combining the data from the trainLoader
     X_train, Y_train = [], []
     for data in trainLoader:
