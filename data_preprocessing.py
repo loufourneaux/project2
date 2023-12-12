@@ -23,6 +23,7 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
     torch.cuda.manual_seed(42)
     torch.cuda.manual_seed_all(42)
 
+    #change path
     df = pd.read_parquet(r"/Users/loufourneaux/Desktop/EPFL/MA1/ML/project2/All_Relative_Results_Cleaned.parquet")
 
     df_clean = df.dropna()
