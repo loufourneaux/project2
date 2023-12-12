@@ -7,7 +7,8 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, TensorDataset
 from sklearn.decomposition import PCA
 
-def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_size =0.5, num_channels =3):
+
+def data_preprocessing(model_name, task_name, batchsize, temp_size=0.2, test_size=0.5, num_channels=3):
     """
     
     :param model_name:
@@ -24,23 +25,24 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
     torch.cuda.manual_seed(42)
     torch.cuda.manual_seed_all(42)
 
-    df = pd.read_parquet(r"/Users/loufourneaux/Desktop/EPFL/MA1/ML/project2/All_Relative_Results_Cleaned.parquet")
+    df = pd.read_parquet("./All_Relative_Results_Cleaned.parquet")
 
     df_clean = df.dropna()
     index = df_clean.columns.get_loc('time(s)')
-    
-    if task_name == 'Task 1':        
+
+    if task_name == 'Task 1':
         Y = df_clean['Exercise']
     elif task_name == 'Task 2':
-        #Fusion of the column exercise and Set to know the mistake 
-        Y = df_clean['Exercise']+ 'avec erreur'+ df_clean['Set']
+        # Fusion of the column exercise and Set to know the mistake
+        Y = df_clean['Exercise'] + 'with mistakes' + df_clean['Set']
     else:
         raise ValueError("Value Error: type 'Task 1' or 'Task 2' ")
     label_encoder = LabelEncoder()
     Y_encoded = label_encoder.fit_transform(Y)
+    output_size = len(np.unique(Y_encoded))
 
     if model_name == 'NN' or model_name == 'CNN' or model_name == 'RF' or model_name == 'GBC':
-        index +=1
+        index += 1
         shuffle = True
     elif model_name == 'GRU':
         add_participants = df_clean['Participant']
@@ -48,24 +50,25 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
         add_participants_encoded = label_encoder.fit_transform(add_participants)
         add_camera_encoded = label_encoder.fit_transform(add_camera)
         shuffle = False
-    else:
-        raise ValueError("Value Error: Choose a correct model name between 'NN', 'GRU', 'CNN', 'RF' or 'GBC' ")
 
     X = df_clean.iloc[:, index:]
 
     if model_name == 'NN' or model_name == 'RF' or model_name == 'GBC':
         X_tensor = torch.tensor(X.values, dtype=torch.float32)
-    elif model_name=='GRU':
+        input_size = X.shape[1]
+    elif model_name == 'GRU':
         X = X.assign(add_participants_encoded=add_participants_encoded, add_camera_encoded=add_camera_encoded)
+        input_size = X.shape[1]
         X_tensor = torch.tensor(X.values, dtype=torch.float32)
 
-    elif model_name =='CNN':
+    elif model_name == 'CNN':
         cols_x = [col for col in X.columns if col.endswith('x')]
         cols_y = [col for col in X.columns if col.endswith('y')]
         cols_z = [col for col in X.columns if col.endswith('z')]
         tensor_5D = torch.zeros((len(X), 3, 33, 1, 1), dtype=torch.float32)
-        nbr_of_points = (X.shape[1])//3
-        X_reshape = X.values.reshape(-1,nbr_of_points,3)
+        nbr_of_points = (X.shape[1]) // 3
+        input_size=nbr_of_points
+        X_reshape = X.values.reshape(-1, nbr_of_points, 3)
         tensor_4D_transposed = np.expand_dims(np.expand_dims(np.transpose(X_reshape, (0, 2, 1)), axis=3), axis=4)
         tensor_5D = torch.from_numpy(tensor_4D_transposed)
         tensor_5D = tensor_5D.permute(0, 2, 1, 3, 4)
@@ -82,9 +85,7 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
         pca = PCA(n_components=3)
         reduced_coords = pca.fit_transform(mean_coords)
 
-
         normalized_coords = (reduced_coords - reduced_coords.min(0)) / reduced_coords.ptp(0)
-        print(normalized_coords.shape)
         grid_coords = np.round(normalized_coords * np.array([2, 2, 10])).astype(int)
         depth, height, width = 3, 3, 11
 
@@ -106,14 +107,13 @@ def data_preprocessing(model_name, task_name, batchsize, temp_size = 0.2, test_s
     Y_tensor = torch.tensor(Y_encoded, dtype=torch.long)
 
     X_train, X_temp, Y_train, Y_temp = train_test_split(X_tensor, Y_tensor, test_size=temp_size)
-    X_test, X_validation, Y_test, Y_validation = train_test_split(X_temp, Y_temp, test_size=test_size)
+    X_validation, X_test, Y_validation, Y_test = train_test_split(X_temp, Y_temp, test_size=test_size)
 
-
-    train_dataset = TensorDataset(X_train,Y_train)
-    #validation_dataset = TensorDataset(X_validation,Y_validation)
-    test_dataset = TensorDataset(X_test,Y_test)
+    train_dataset = TensorDataset(X_train, Y_train)
+    # validation_dataset = TensorDataset(X_validation,Y_validation)
+    test_dataset = TensorDataset(X_test, Y_test)
     trainLoader = DataLoader(train_dataset, batch_size=batchsize, shuffle=shuffle)
-    #validationLoader = DataLoader(validation_dataset,batch_size=batchsize,shuffle=shuffle)
-    testLoader = DataLoader(test_dataset, batch_size=batchsize , shuffle=shuffle)
+    # validationLoader = DataLoader(validation_dataset,batch_size=batchsize,shuffle=shuffle)
+    testLoader = DataLoader(test_dataset, batch_size=batchsize, shuffle=shuffle)
 
-    return trainLoader,testLoader, X_validation, Y_validation
+    return trainLoader, testLoader, X_validation, Y_validation, output_size,input_size
