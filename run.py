@@ -252,23 +252,29 @@ def task_1_cnn(save_type, model_file_path):
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
     if save_type == 'new':
     # Tune hyperparameters
-        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size=(3, 3, 3), output_size=output_size,
+        print(input_size)
+        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size1=(3, 3, 3), kernel_size2=(3, 3, 3), output_size=output_size,
                                      hidden_size1=64,
-                                     hidden_size2=128, hidden_size3=50, nbr_features=99, stride=1, padding=1)
+                                     hidden_size2=128, hidden_size3=50, stride=1, padding=1)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size)
+        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size,max_epochs=50,cv=3)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
         # Create and save the best model
         start_time = time.time()
         print("Creating and saving the best model...")
-        best_model = ConvNeuralNetwork(input_channels=input_size, kernel_size=best_hyperparams.kernel_size,
-                                       activation_function =best_hyperparams.activation_function,
-                                       output_size=output_size, hidden_size1=best_hyperparams.hidden_size1,
-                                       hidden_size2=best_hyperparams.hidden_size2,
-                                       hidden_size3=best_hyperparams.hidden_size3, nbr_features=99, stride=1, padding=1)
+        best_model = ConvNeuralNetwork(input_channels=3,
+                                       kernel_size1=best_hyperparams['module__kernel_size1'],
+                                       kernel_size2=best_hyperparams['module__kernel_size2'],
+                                       activation_function=best_hyperparams['module__activation_function'],
+                                       output_size=output_size,
+                                       hidden_size1=best_hyperparams['module__hidden_size1'],
+                                       hidden_size2=best_hyperparams['module__hidden_size2'],
+                                       hidden_size3=best_hyperparams['module__hidden_size3'],
+                                       stride=1,
+                                       padding=1)
         torch.save(best_model, './entire_modelcnn_task1_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
@@ -522,23 +528,29 @@ def task_2_cnn(save_type, model_file_path):
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
     if save_type == 'new':
         # Tune hyperparameters
-        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size=(3, 3, 3), output_size=output_size,
+        print(input_size)
+        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size1=(3, 3, 3), kernel_size2=(3, 3, 3), output_size=output_size,
                                      hidden_size1=64,
-                                     hidden_size2=128, hidden_size3=50, nbr_features=99, stride=1, padding=1)
+                                     hidden_size2=128, hidden_size3=50, stride=1, padding=1)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size)
+        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size,max_epochs=50,cv=3)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
         # Create and save the best model
         start_time = time.time()
         print("Creating and saving the best model...")
-        best_model = ConvNeuralNetwork(input_channels=input_size, kernel_size=best_hyperparams.kernel_size,
-                                       activation_function =best_hyperparams.activation_function,
-                                       output_size=output_size, hidden_size1=best_hyperparams.hidden_size1,
-                                       hidden_size2=best_hyperparams.hidden_size2,
-                                       hidden_size3=best_hyperparams.hidden_size3, nbr_features=99, stride=1, padding=1)
+        best_model = ConvNeuralNetwork(input_channels=3,
+                                       kernel_size1=best_hyperparams['module__kernel_size1'],
+                                       kernel_size2=best_hyperparams['module__kernel_size2'],
+                                       activation_function=best_hyperparams['module__activation_function'],
+                                       output_size=output_size,
+                                       hidden_size1=best_hyperparams['module__hidden_size1'],
+                                       hidden_size2=best_hyperparams['module__hidden_size2'],
+                                       hidden_size3=best_hyperparams['module__hidden_size3'],
+                                       stride=1,
+                                       padding=1)
         torch.save(best_model, './entire_modelcnn_task2_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
@@ -558,9 +570,6 @@ def task_2_cnn(save_type, model_file_path):
     start_time = time.time()
     print("Testing tuned model...")
     test_cnn_model(testLoader, best_model)
-    print(f"Testing time: {time_elapsed(time.time() - start_time)}")
-
-
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
