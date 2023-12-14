@@ -34,10 +34,10 @@ from sklearn.metrics import classification_report
 
 
 class NeuralNetwork(nn.Module):
-    def __init__(self, output_size, input_size=99, hidden_size1=64, hidden_size2=64):
+    def __init__(self, output_size, input_size=99, hidden_size1=64, hidden_size2=64, activation='relu'):
         super(NeuralNetwork, self).__init__()
         self.layer1 = nn.Linear(input_size, hidden_size1)
-        self.relu = nn.ReLU()
+        self.activation = self.get_activation(activation)
         self.layer2 = nn.Linear(hidden_size1, hidden_size2)
         self.layer3 = nn.Linear(hidden_size2, output_size)
 
@@ -45,9 +45,9 @@ class NeuralNetwork(nn.Module):
         self.outputsize = output_size
     def forward(self, x):
         x = self.layer1(x)
-        x = self.relu(x)
+        x = self.activation(x)
         x = self.layer2(x)
-        x = self.relu(x)
+        x = self.activation(x)
         x = self.layer3(x)
         return x
 
@@ -55,6 +55,17 @@ class NeuralNetwork(nn.Module):
         for layer in self.children():
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
+    
+    def get_activation(self, activation):
+        if activation=='relu': 
+            return nn.ReLU()
+        elif activation=='sigmoid':
+            return nn.Sigmoid()
+        elif activation =='tanh':
+            return nn.Tanh()
+        elif activation =='softmax':
+            return nn.Softmax()
+        else: raise ValueError(f"Unsupported activation function")
 
 
 def restart_nn_model(output_size, learning_rate=0.001):
@@ -141,8 +152,8 @@ def test_nn_model(testLoader, model):
 
 
 def tune_nn_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1=64, hidden_size2=64, threshold=0.0001,
-                            patience=5, max_epochs=50, cv=3,
-                            verbose=1):
+                            patience=5, max_epochs=50, cv=3, activation ='relu',
+                            verbose=1): 
     """
 
     :param model:
@@ -167,10 +178,11 @@ def tune_nn_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1=6
     }
     """
     param_grid = {
-        'module__hidden_size1': [4096],
-        'module__hidden_size2': [512],
-        'batch_size': [151],
-        'optimizer__lr': [0.001]
+        'module__hidden_size1': [4096, 2048],
+        'module__hidden_size2': [512, 384],
+        'optimizer__lr': [0.001],
+        'module__activation':['relu','tanh', 'sigmoid']
+
     }
     model.eval()
     print(model.outputsize)
@@ -187,16 +199,18 @@ def tune_nn_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1=6
         module__hidden_size1=hidden_size1,  # Example values
         module__hidden_size2=hidden_size2,
         module__output_size=output_size,
+        module__activation=activation,
         criterion=nn.CrossEntropyLoss,
         optimizer=optim.Adam,
         max_epochs=max_epochs,  # or choose an appropriate number of epochs
         callbacks=[early_stopping]
+        
     )
 
     # Use GridSearchCV for hyperparameter tuning, cv for the number of folds in cross-validation, verbose for the explicit stage of tuning
     grid_search = GridSearchCV(estimator=classifier, param_grid=param_grid, scoring='accuracy', cv=cv, verbose=verbose)
     # get grid result
-    grid_result = grid_search.fit(X_valid, y_valid)
+    grid_search.fit(X_valid, y_valid)
 
     # Get the best hyperparameters
     best_hyperparams = grid_search.best_params_

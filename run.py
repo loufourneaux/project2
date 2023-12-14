@@ -49,7 +49,8 @@ def task_1_nn(save_type, model_file_path):
         modelNN = NeuralNetwork(output_size)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=10)
+        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=50)
+
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
@@ -58,7 +59,8 @@ def task_1_nn(save_type, model_file_path):
         print("Creating and saving the best model...")
         best_model = NeuralNetwork(output_size=output_size, input_size=input_size,
                                    hidden_size1=best_hyperparams['module__hidden_size1'],
-                                   hidden_size2=best_hyperparams['module__hidden_size2'])
+                                   hidden_size2=best_hyperparams['module__hidden_size2'],
+                                   activation=best_hyperparams['module__activation'])
         torch.save(best_model, './entire_modelnn_task1_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
@@ -66,7 +68,7 @@ def task_1_nn(save_type, model_file_path):
         # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_nn_model(trainLoader, best_model, nbr_epoch=10)
+        best_model, _, _, _ = train_nn_model(trainLoader, best_model, nbr_epoch=100)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
 
         start_time = time.time()
@@ -316,7 +318,7 @@ def task_2_nn(save_type, model_file_path):
         modelNN = NeuralNetwork(output_size)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=10)
+        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=50)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
@@ -325,20 +327,22 @@ def task_2_nn(save_type, model_file_path):
         print("Creating and saving the best model...")
         best_model = NeuralNetwork(output_size=output_size, input_size=input_size,
                                    hidden_size1=best_hyperparams['module__hidden_size1'],
-                                   hidden_size2=best_hyperparams['module__hidden_size2'])
-        torch.save(best_model, './entire_modelnn_task2_tuned.pth')  # change path
+                                   hidden_size2=best_hyperparams['module__hidden_size2'],
+                                   activation=best_hyperparams['module__activation'])
+        torch.save(best_model, './entire_modelnn_task2_tuned.pth')  
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
+        print(f"Best hyperparameters are hidden-size1={best_hyperparams['module__hidden_size1']},hidden_size2={best_hyperparams['module__hidden_size2']}, activation function is {best_hyperparams['module__activation']}")
 
     if save_type in ['new', 't']:
         # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_nn_model(trainLoader, best_model, nbr_epoch=10)
+        best_model, _, _, _ = train_nn_model(trainLoader, best_model, nbr_epoch=100)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
 
         start_time = time.time()
         print("Saving tuned and trained model..")
-        torch.save(best_model, './entire_modelnn_task2_tuned_trained.pth')  # change path
+        torch.save(best_model, './entire_modelnn_task2_tuned_trained.pth') 
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
     # Testing the tuned model
@@ -387,7 +391,7 @@ def task_2_gru(save_type, model_file_path):
         print("Creating and saving the best model...")
         best_model = GRUNeuralNetwork(output_size=output_size,
                                       hidden_size1=best_hyperparams['module__hidden_size1'])
-        torch.save(best_model, './entire_modelgru_task2_tuned.pth')  # change path
+        torch.save(best_model, './entire_modelgru_task2_tuned.pth')
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
     if save_type in ['new', 't']:
@@ -400,7 +404,7 @@ def task_2_gru(save_type, model_file_path):
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
         start_time = time.time()
         print("Saving tuned and trained model...")
-        torch.save(best_model, './entire_modelgru_task2_tuned_trained.pth')  # change path
+        torch.save(best_model, './entire_modelgru_task2_tuned_trained.pth')  
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
     # Testing the tuned model
