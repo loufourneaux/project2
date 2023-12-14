@@ -8,27 +8,28 @@ import torch.nn.functional as F
 
 
 class ConvNeuralNetwork(nn.Module):
-    def __init__(self, input_channels=3, kernel_size=(3, 3, 3), activation_function =F.relu, output_size=7, hidden_size1=64, hidden_size2=128,
-                 hidden_size3=50, nbr_features=99, stride=1, padding=1):
+    def __init__(self, input_channels=3, kernel_size1=(3, 3, 3), kernel_size2=(3, 3, 3), activation_function=F.relu, output_size=7, hidden_size1=64, hidden_size2=128, hidden_size3=50, stride=1, padding=1):
         super(ConvNeuralNetwork, self).__init__()
-        self.conv1 = nn.Conv3d(in_channels=input_channels, out_channels=hidden_size1, kernel_size=kernel_size,
-                               stride=stride, padding=padding)
-        self.conv2 = nn.Conv3d(in_channels=hidden_size1, out_channels=hidden_size2, kernel_size=kernel_size,
-                               stride=stride, padding=padding)
+        self.conv1 = nn.Conv3d(in_channels=input_channels, out_channels=hidden_size1, kernel_size=kernel_size1, stride=stride, padding=padding)
+        self.pool = nn.MaxPool3d(kernel_size=2, stride=2)
+        self.conv2 = nn.Conv3d(in_channels=hidden_size1, out_channels=hidden_size2, kernel_size=kernel_size2, stride=stride, padding=padding)
         self._to_linear = None
-        self._calculate_to_linear((input_channels, *kernel_size))
+        self._calculate_to_linear((input_channels, 3, 3, 11))  # Adjusted to match your input shape
         self.fc1 = nn.Linear(in_features=self._to_linear, out_features=hidden_size3)
         self.fc2 = nn.Linear(in_features=hidden_size3, out_features=output_size)
         self.activation_function = activation_function
 
-    def _calculate_to_linear(self, shape):
+    def _calculate_to_linear(self, input_shape):
         with torch.no_grad():
-            input_tensor = torch.rand(1, *shape)
-            output_tensor = self.conv2(self.conv1(input_tensor))
+            input_tensor = torch.zeros((1, *input_shape))  # Adjusted to include batch size
+            output_tensor = self.conv1(input_tensor)
+            output_tensor = self.pool(output_tensor)
+            output_tensor = self.conv2(output_tensor)
             self._to_linear = int(torch.prod(torch.tensor(output_tensor.shape[1:])))
 
     def forward(self, x):
         x = self.activation_function(self.conv1(x))
+        x = self.pool(x)
         x = self.activation_function(self.conv2(x))
         x = x.view(x.size(0), -1)
         x = self.activation_function(self.fc1(x))
@@ -123,9 +124,9 @@ def test_cnn_model(testLoader, model):
     return y_true, y_pred
 
 
-def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(3, 3, 3),activation_function=F.relu,
+def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size1=(3, 3, 3), kernel_size2 = (3,3,3),activation_function=F.relu,
                              hidden_size1=64, hidden_size2=128, hidden_size3=50, nbr_features=99,
-                             threshold=0.001, patience=5, max_epochs=50, cv=3,
+                             threshold=0.001, patience=5, max_epochs=2, cv=3,
                              verbose=2):
     """
 
@@ -157,8 +158,18 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
         'module__hidden_size1': [64],
         'module__hidden_size2': [128],
         'module__hidden_size3': [50],
-        'module__kernel_size': [(1, 1, 1),(2, 2, 2)],
+        'module__kernel_size1': [(1, 1, 1),(2, 2, 2)],
+        'module__kernel_size2': [(3, 3, 3),(2, 2, 2)],
         "module__activation_function": [F.relu,F.leaky_relu],
+        'optimizer__lr': [0.0001]
+    }
+    param_grid3 = {
+        'module__hidden_size1': [64 ],
+        'module__hidden_size2': [128],
+        'module__hidden_size3': [50],
+        'module__kernel_size1': [(2, 2, 2)],
+        'module__kernel_size2': [(2, 2, 2)],
+        "module__activation_function": [F.relu],
         'optimizer__lr': [0.0001]
     }
 
@@ -178,8 +189,9 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
         module=ConvNeuralNetwork,
         module__hidden_size1=hidden_size1,
         module__hidden_size2=hidden_size2,
-        module__hidden_size3=hidden_size3 * nbr_features,
-        module__kernel_size=kernel_size,
+        module__hidden_size3=hidden_size3,
+        module__kernel_size1=kernel_size1,
+        module__kernel_size2=kernel_size2,
         module__output_size=output_size,
         module__activation_function=activation_function,
         criterion=nn.CrossEntropyLoss,
@@ -195,7 +207,7 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
 
     # Get the best hyperparameters
     best_hyperparams = grid_search.best_params_
-
+    print(best_hyperparams)
     # get best score
     best_score = grid_search.best_score_
 
