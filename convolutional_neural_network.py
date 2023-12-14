@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 
 class ConvNeuralNetwork(nn.Module):
-    def __init__(self, input_channels=3, kernel_size=(3, 3, 3), output_size=7, hidden_size1=64, hidden_size2=128,
+    def __init__(self, input_channels=3, kernel_size=(3, 3, 3), activation_function =F.relu, output_size=7, hidden_size1=64, hidden_size2=128,
                  hidden_size3=50, nbr_features=99, stride=1, padding=1):
         super(ConvNeuralNetwork, self).__init__()
         self.conv1 = nn.Conv3d(in_channels=input_channels, out_channels=hidden_size1, kernel_size=kernel_size,
@@ -17,12 +17,12 @@ class ConvNeuralNetwork(nn.Module):
                                stride=stride, padding=padding)
         self.fc1 = nn.Linear(in_features=nbr_features * hidden_size2, out_features=hidden_size3)
         self.fc2 = nn.Linear(in_features=hidden_size3, out_features=output_size)
-
+        self.activation_function = activation_function
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = F.relu(self.conv2(x))
+        x = self.activation_function(self.conv1(x))
+        x = self.activation_function(self.conv2(x))
         x = x.view(x.size(0), -1)
-        x = F.relu(self.fc1(x))
+        x = self.activation_function(self.fc1(x))
         x = self.fc2(x)
         return x
 
@@ -114,10 +114,10 @@ def test_cnn_model(testLoader, model):
     return y_true, y_pred
 
 
-def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(3, 3, 3),
+def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(3, 3, 3),activation_function=F.relu,
                              hidden_size1=64, hidden_size2=128, hidden_size3=50, nbr_features=99,
-                             threshold=0.0001, patience=5, max_epochs=50, cv=3,
-                             verbose=1):
+                             threshold=0.001, patience=5, max_epochs=50, cv=3,
+                             verbose=2):
     """
 
     :param model:
@@ -139,9 +139,9 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
     param_grid = {
         'module__hidden_size1': [64],
         'module__hidden_size2': [128],
-        'module__hidden_size3': [50 * nbr_features],
-        'module__kernel_size': [(3, 3, 3)],
-        'batch_size': [150],
+        'module__hidden_size3': [50],
+        'module__kernel_size': [(3, 3, 3),(2, 2, 2)],
+        "module__activation_function": [F.relu,F.elu],
         'optimizer__lr': [0.0001]
     }
 
@@ -149,10 +149,11 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
     modelCNN.eval()
 
     early_stopping = EarlyStopping(
-        monitor='valid_loss',  # Change to 'valid_acc' for accuracy
-        threshold=threshold,  # Define your threshold
-        threshold_mode='rel',  # 'rel' for relative, 'abs' for absolute
-        patience=patience  # Number of epochs to wait after condition is met
+        monitor='valid_acc',  # Change to 'valid_acc' for accuracy
+        threshold=0.001,  # Define your threshold
+        threshold_mode='abs',  # 'rel' for relative, 'abs' for absolute
+        patience=3,
+        lower_is_better=False# Number of epochs to wait after condition is met
     )
 
     # Convert the PyTorch model to a skorch classifier to use in GridSearchCV
@@ -163,6 +164,7 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
         module__hidden_size3=hidden_size3 * nbr_features,
         module__kernel_size=kernel_size,
         module__output_size=output_size,
+        module__activation_function=activation_function,
         criterion=nn.CrossEntropyLoss,
         optimizer=optim.Adam,
         max_epochs=max_epochs,  # or choose an appropriate number of epochs
