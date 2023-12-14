@@ -15,9 +15,18 @@ class ConvNeuralNetwork(nn.Module):
                                stride=stride, padding=padding)
         self.conv2 = nn.Conv3d(in_channels=hidden_size1, out_channels=hidden_size2, kernel_size=kernel_size,
                                stride=stride, padding=padding)
-        self.fc1 = nn.Linear(in_features=nbr_features * hidden_size2, out_features=hidden_size3)
+        self._to_linear = None
+        self._calculate_to_linear((input_channels, *kernel_size))
+        self.fc1 = nn.Linear(in_features=self._to_linear, out_features=hidden_size3)
         self.fc2 = nn.Linear(in_features=hidden_size3, out_features=output_size)
         self.activation_function = activation_function
+
+    def _calculate_to_linear(self, shape):
+        with torch.no_grad():
+            input_tensor = torch.rand(1, *shape)
+            output_tensor = self.conv2(self.conv1(input_tensor))
+            self._to_linear = int(torch.prod(torch.tensor(output_tensor.shape[1:])))
+
     def forward(self, x):
         x = self.activation_function(self.conv1(x))
         x = self.activation_function(self.conv2(x))
@@ -144,6 +153,14 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
         "module__activation_function": [F.relu,F.elu],
         'optimizer__lr': [0.0001]
     }
+    param_grid2 = {
+        'module__hidden_size1': [64],
+        'module__hidden_size2': [128],
+        'module__hidden_size3': [50],
+        'module__kernel_size': [(1, 1, 1),(2, 2, 2)],
+        "module__activation_function": [F.relu,F.leaky_relu],
+        'optimizer__lr': [0.0001]
+    }
 
     modelCNN = model
     modelCNN.eval()
@@ -172,7 +189,7 @@ def tune_cnn_hyperparameters(model, X_valid, y_valid, output_size, kernel_size=(
     )
 
     # Use GridSearchCV for hyperparameter tuning, cv for the number of folds in cross-validation, verbose for the explicit stage of tuning
-    grid_search = GridSearchCV(classifier, param_grid, scoring='accuracy', cv=cv, verbose=verbose)
+    grid_search = GridSearchCV(classifier, param_grid2, scoring='accuracy', cv=cv, verbose=verbose)
     # get grid result
     grid_result = grid_search.fit(X_valid, y_valid)
 
