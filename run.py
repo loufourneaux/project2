@@ -496,8 +496,7 @@ def task_2_gbc(save_type, model_file_path):
     print(f"Training and testing time: {time_elapsed(time.time() - start_time)}")
     print(f"Training Accuracy: {accuracy_train}")
     print(f"Testing Accuracy: {accuracy_test}")
-
-
+    
 def task_2_cnn(save_type, model_file_path):
     """
 
@@ -517,9 +516,9 @@ def task_2_cnn(save_type, model_file_path):
     print("Data Preprocessing...")
     trainLoader, testLoader, X_valid, Y_valid, output_size, input_size = data_preprocessing(model_name='CNN',
                                                                                             task_name='Task 2'
-                                                                                            , batchsize=151,
-                                                                                            temp_size=0.95,
-                                                                                            test_size=0.95)
+                                                                                            , batchsize=64,
+                                                                                            temp_size=0.3,
+                                                                                            test_size=0.5)
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
     if save_type == 'new':
         # Tune hyperparameters
@@ -535,9 +534,11 @@ def task_2_cnn(save_type, model_file_path):
         # Create and save the best model
         start_time = time.time()
         print("Creating and saving the best model...")
-        best_model = ConvNeuralNetwork(hidden_size1=best_hyperparams.hidden_size1,
-                                       hidden_size2=best_hyperparams.hidden_size2, output_size=output_size,
-                                       input_channels=input_size)
+        best_model = ConvNeuralNetwork(input_channels=input_size, kernel_size=best_hyperparams.kernel_size,
+                                       activation_function =best_hyperparams.activation_function,
+                                       output_size=output_size, hidden_size1=best_hyperparams.hidden_size1,
+                                       hidden_size2=best_hyperparams.hidden_size2,
+                                       hidden_size3=best_hyperparams.hidden_size3, nbr_features=99, stride=1, padding=1)
         torch.save(best_model, './entire_modelcnn_task2_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
@@ -557,6 +558,9 @@ def task_2_cnn(save_type, model_file_path):
     start_time = time.time()
     print("Testing tuned model...")
     test_cnn_model(testLoader, best_model)
+    print(f"Testing time: {time_elapsed(time.time() - start_time)}")
+
+
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
