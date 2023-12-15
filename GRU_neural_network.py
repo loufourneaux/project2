@@ -7,10 +7,10 @@ from sklearn.model_selection import GridSearchCV
 
 
 class GRUNeuralNetwork(nn.Module):
-    def __init__(self, input_size=102, hidden_size1=64, output_size=7):
+    def __init__(self, input_size=102, hidden_size1=64, output_size=7, activation='relu'):
         super(GRUNeuralNetwork, self).__init__()
         self.gru = nn.GRU(input_size, hidden_size1)  # , batch_first=True)
-        self.relu = nn.ReLU()
+        self.activation = self.get_activation(activation)
         self.layer2 = nn.Linear(hidden_size1, output_size)
 
     def forward(self, x):
@@ -18,9 +18,18 @@ class GRUNeuralNetwork(nn.Module):
         output, _ = self.gru(x)
         # Prenez seulement la sortie de la dernière étape de la séquence
         # output = output[:, -1, :]
-        output = self.relu(output)
+        output = self.activation(output)
         output = self.layer2(output)
         return output
+    
+    def get_activation(self, activation):
+        if activation=='relu': 
+            return nn.ReLU()
+        elif activation=='sigmoid':
+            return nn.Sigmoid()
+        elif activation =='tanh':
+            return nn.Tanh()
+        else: raise ValueError(f"Unsupported activation function")
 
 
 def restart_gru_model(learning_rate=0.0001):
@@ -107,7 +116,7 @@ def test_gru_model(testLoader, modelGRU):
     return y_true, y_pred
 
 
-def tune_gru_hyperparameters(model, X_valid, y_valid, hidden_size1 = 64, threshold=0.0001, patience=5, max_epochs=50, cv=3,
+def tune_gru_hyperparameters(model, X_valid, y_valid, hidden_size1 = 64, threshold=0.0001, patience=5, max_epochs=50, cv=3, activation='relu',
                              verbose=1):
     """
 
@@ -123,33 +132,27 @@ def tune_gru_hyperparameters(model, X_valid, y_valid, hidden_size1 = 64, thresho
     :return:
     """
     # parameters to tune
-    """
     param_grid = {
         'module__hidden_size1': [4096, 2048],
-        'module__hidden_size2': [512],
-        'batch_size': [153, 150, 152, 151],
-        'optimizer__lr': [0.001]
-    }
-    """
-    param_grid = {
-        'module__hidden_size1': [4096],
-        'batch_size': [151],
-        'optimizer__lr': [0.001]
+        'optimizer__lr': [0.001],
+        'module__activation':['relu','sigmoid','tanh']
     }
     modelGRU = model
     modelGRU.eval()
 
     early_stopping = EarlyStopping(
-        monitor='valid_loss',  # Change to 'valid_acc' for accuracy
+        monitor='valid_acc',  # Change to 'valid_acc' for accuracy
         threshold=threshold,  # Define your threshold
-        threshold_mode='rel',  # 'rel' for relative, 'abs' for absolute
-        patience=patience  # Number of epochs to wait after condition is met
+        threshold_mode='abs',  # 'rel' for relative, 'abs' for absolute
+        patience=patience,  # Number of epochs to wait after condition is met
+        lower_is_better=False# Number of epochs to wait after condition is met
     )
 
     # Convert the PyTorch model to a skorch classifier to use in GridSearchCV
     classifier = NeuralNetClassifier(
         module=GRUNeuralNetwork,
         module__hidden_size1=hidden_size1,  # Example values
+        module__activation=activation,
         criterion=nn.CrossEntropyLoss,
         optimizer=optim.Adam,
         max_epochs=max_epochs,  # or choose an appropriate number of epochs
