@@ -113,7 +113,7 @@ def task_1_gru(save_type, model_file_path):
 
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_gru_hyperparameters(modelGRU, X_valid, Y_valid, max_epochs=5)
+        best_hyperparams, best_score = tune_gru_hyperparameters(modelGRU, X_valid, Y_valid, output_size=output_size, max_epochs=5)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
@@ -390,7 +390,7 @@ def task_2_gru(save_type, model_file_path):
 
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_gru_hyperparameters(modelGRU, X_valid, Y_valid, max_epochs=5)
+        best_hyperparams, best_score = tune_gru_hyperparameters(modelGRU, X_valid, Y_valid,output_size=output_size, max_epochs=5)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
