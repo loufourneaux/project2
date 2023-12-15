@@ -40,8 +40,8 @@ def task_1_nn(save_type, model_file_path):
     trainLoader, testLoader, X_valid, Y_valid, output_size, input_size = data_preprocessing(model_name='NN',
                                                                                             task_name='Task 1',
                                                                                             batchsize=151,
-                                                                                            temp_size=0.95,
-                                                                                            test_size=0.95)
+                                                                                            temp_size=0.3,
+                                                                                            test_size=0.5)
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
 
     if save_type == 'new':
@@ -103,8 +103,8 @@ def task_1_gru(save_type, model_file_path):
     trainLoader, testLoader, X_valid, Y_valid, output_size, input_size = data_preprocessing(model_name='GRU',
                                                                                             task_name='Task 1',
                                                                                             batchsize=151,
-                                                                                            temp_size=0.95,
-                                                                                            test_size=0.95)
+                                                                                            temp_size=0.3,
+                                                                                            test_size=0.5)
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
 
     # Tune hyperparameters
@@ -163,8 +163,8 @@ def task_1_rf(save_type, model_file_path):
         # Data preprocessing
         print("Data Preprocessing...")
         trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 1',
-                                                                             batchsize=151, temp_size=0.95,
-                                                                             test_size=0.95)
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_rf_hyperparameters(X_valid, Y_valid)
@@ -204,8 +204,8 @@ def task_1_gbc(save_type, model_file_path):
         # Data preprocessing
         print("Data Preprocessing...")
         trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 1',
-                                                                             batchsize=151, temp_size=0.95,
-                                                                             test_size=0.95)
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_gbc_hyperparameters(X_valid, Y_valid)
@@ -317,8 +317,8 @@ def task_2_nn(save_type, model_file_path):
     trainLoader, testLoader, X_valid, Y_valid, output_size, input_size = data_preprocessing(model_name='NN',
                                                                                             task_name='Task 2',
                                                                                             batchsize=151,
-                                                                                            temp_size=0.95,
-                                                                                            test_size=0.95)
+                                                                                            temp_size=0.3,
+                                                                                            test_size=0.5)
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
 
     if save_type == 'new':
@@ -380,8 +380,8 @@ def task_2_gru(save_type, model_file_path):
     trainLoader, testLoader, X_valid, Y_valid, output_size, input_size = data_preprocessing(model_name='GRU',
                                                                                             task_name='Task 2',
                                                                                             batchsize=151,
-                                                                                            temp_size=0.95,
-                                                                                            test_size=0.95)
+                                                                                            temp_size=0.3,
+                                                                                            test_size=0.5)
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
 
     # Tune hyperparameters
@@ -440,8 +440,8 @@ def task_2_rf(save_type, model_file_path):
         # Data preprocessing
         print("Data Preprocessing...")
         trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 2',
-                                                                             batchsize=151, temp_size=0.95,
-                                                                             test_size=0.95)
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_rf_hyperparameters(X_valid, Y_valid)
@@ -481,8 +481,8 @@ def task_2_gbc(save_type, model_file_path):
         # Data preprocessing
         print("Data Preprocessing...")
         trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 2',
-                                                                             batchsize=151, temp_size=0.95,
-                                                                             test_size=0.95)
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_gbc_hyperparameters(X_valid, Y_valid)
