@@ -7,7 +7,7 @@ from sklearn.model_selection import GridSearchCV
 
 
 class GRUNeuralNetwork(nn.Module):
-    def __init__(self, input_size=102, hidden_size1=64, output_size=7, activation='relu'):
+    def __init__(self, output_size, input_size=102, hidden_size1=64, activation='relu'):
         super(GRUNeuralNetwork, self).__init__()
         self.gru = nn.GRU(input_size, hidden_size1)  # , batch_first=True)
         self.activation = self.get_activation(activation)
@@ -116,7 +116,7 @@ def test_gru_model(testLoader, modelGRU):
     return y_true, y_pred
 
 
-def tune_gru_hyperparameters(model, X_valid, y_valid, hidden_size1 = 64, threshold=0.0001, patience=5, max_epochs=50, cv=3, activation='relu',
+def tune_gru_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1 = 64, threshold=0.0001, patience=5, max_epochs=50, cv=3, activation='relu',
                              verbose=1):
     """
 
@@ -153,6 +153,7 @@ def tune_gru_hyperparameters(model, X_valid, y_valid, hidden_size1 = 64, thresho
         module=GRUNeuralNetwork,
         module__hidden_size1=hidden_size1,  # Example values
         module__activation=activation,
+        module__output_size=output_size,
         criterion=nn.CrossEntropyLoss,
         optimizer=optim.Adam,
         max_epochs=max_epochs,  # or choose an appropriate number of epochs
