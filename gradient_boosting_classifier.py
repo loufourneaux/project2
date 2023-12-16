@@ -70,7 +70,7 @@ def GBC_cv(trainLoader, testLoader, best_params):
     accuracy_train = accuracy_score(Y_train, Y_pred_cv)
     accuracy_test = accuracy_score(Y_test, y_pred_test)
 
-    return Y_pred_cv, y_pred_test, accuracy_train, accuracy_test
+    return Y_pred_cv, y_pred_test, accuracy_train, accuracy_test , gb_classifier
 
 def tune_gbc_hyperparameters(X_validation, Y_validation, cv=5, verbose=2, n_jobs=-1):
     # Define the parameter grid to test

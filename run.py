@@ -169,7 +169,7 @@ def task_1_rf(save_type, model_file_path):
         # Data preprocessing
         print("Data Preprocessing...")
         trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 1',
-                                                                             batchsize=151, temp_size=0.3,
+                                                                             batchsize=152, temp_size=0.3,
                                                                              test_size=0.5)
 
         print("Tuning hyperparameters...")
@@ -185,8 +185,8 @@ def task_1_rf(save_type, model_file_path):
     # Train and Test RandomForest Model
     start_time = time.time()
     print("Training and Testing RandomForest Model...")
-    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = RF_cv(trainLoader, testLoader, best_hyperparams)
-
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test, train_tuned_model = RF_cv(trainLoader, testLoader, best_hyperparams)
+    joblib.dump(train_tuned_model,'./entire_modelrf_task1_trained_tuned.joblib')
     y_true = y_train
     y_pred = y_pred_test
     save_test_results_to_csv(y_true,y_pred, "test_result_rf_1.csv")
@@ -230,8 +230,8 @@ def task_1_gbc(save_type, model_file_path):
     # Train and Test Gradient Boosting Descent Model
     start_time = time.time()
     print("Training and Testing Gradient Boosting Descent Model...")
-    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = GBC_cv(trainLoader, testLoader, best_hyperparams)
-
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test, train_tuned_model = GBC_cv(trainLoader, testLoader, best_hyperparams)
+    joblib.dump(train_tuned_model,'./entire_modelgbc_task1_trained_tuned.joblib')
     y_true = y_train
     y_pred = y_pred_test
     save_test_results_to_csv(y_true,y_pred, "test_result_gbc_1.csv")
@@ -460,7 +460,7 @@ def task_2_rf(save_type, model_file_path):
         # Data preprocessing
         print("Data Preprocessing...")
         trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 2',
-                                                                             batchsize=151, temp_size=0.3,
+                                                                             batchsize=152, temp_size=0.3,
                                                                              test_size=0.5)
 
         print("Tuning hyperparameters...")
@@ -476,11 +476,11 @@ def task_2_rf(save_type, model_file_path):
     # Train and Test RandomForest Model
     start_time = time.time()
     print("Training and Testing RandomForest Model...")
-    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = RF_cv(trainLoader, testLoader, best_hyperparams)
-
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test, train_tuned_model = RF_cv(trainLoader, testLoader, best_hyperparams)
+    joblib.dump(train_tuned_model,'./entire_modelrf_task2_trained_tuned.joblib')
     y_true = y_train
     y_pred = y_pred_test
-    save_test_results_to_csv(y_true,y_pred, "test_result_rf_1.csv")
+    save_test_results_to_csv(y_true,y_pred, "test_result_rf_2.csv")
 
     print(f"Training and testing time: {time_elapsed(time.time() - start_time)}")
     print(f"Training Accuracy: {accuracy_train}")
@@ -522,8 +522,8 @@ def task_2_gbc(save_type, model_file_path):
     # Train and Test Gradient Boosting Descent Model
     start_time = time.time()
     print("Training and Testing Gradient Boosting Descent Model...")
-    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = GBC_cv(trainLoader, testLoader, best_hyperparams)
-
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test, train_tuned_model = GBC_cv(trainLoader, testLoader, best_hyperparams)
+    joblib.dump(train_tuned_model,'./entire_modelgbc_task2_trained_tuned.joblib')
     y_true = y_train
     y_pred = y_pred_test
     save_test_results_to_csv(y_true,y_pred, "test_result_gbc_2.csv")

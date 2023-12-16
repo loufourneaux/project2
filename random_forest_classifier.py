@@ -51,7 +51,7 @@ def RF_cv(trainLoader, testLoader, best_params):
     Y_train = torch.cat(Y_train, 0).numpy()
 
     # Training the RandomForest Classifier with best parameters
-    rf_classifier = RandomForestClassifier(**best_params)
+    rf_classifier = RandomForestClassifier(**best_params, verbose=2)
     Y_pred_cv = cross_val_predict(rf_classifier, X_train, Y_train, cv=5)
     rf_classifier.fit(X_train, Y_train)
 
@@ -71,17 +71,21 @@ def RF_cv(trainLoader, testLoader, best_params):
     accuracy_train = accuracy_score(Y_train, Y_pred_cv)
     accuracy_test = accuracy_score(Y_test, y_pred_test)
 
-    return Y_train, Y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test
+    return Y_train, Y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test, rf_classifier
 
 
-def tune_rf_hyperparameters(X_validation, Y_validation, cv=5, verbose=2, n_jobs=-1):
+def tune_rf_hyperparameters(X_validation, Y_validation, cv=4, verbose=2, n_jobs=-1):
     # Define the parameter grid to test
     param_grid = {
-        'n_estimators': [100, 200, 300],
+        'n_estimators': [50, 100, 200],
         'random_state': [100],
-        'max_depth': [None, 10, 20, 30],
+        'max_depth': [None, 10],
     }
-
+    param_grid2 = {
+        'n_estimators': [50],
+        'random_state': [100],
+        'max_depth': [None, 10],
+    }
     # Initialize RandomForest model
     rf = RandomForestClassifier()
 
