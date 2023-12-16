@@ -154,6 +154,7 @@ def task_1_rf(save_type, model_file_path):
 
     :return:
     """
+
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -179,7 +180,7 @@ def task_1_rf(save_type, model_file_path):
         start_time = time.time()
         print("Creating and saving the best model...")
         best_model = RandomForestClassifier(**best_hyperparams)
-        joblib.dump(best_model, model_file_path) # Saving tuned model
+        joblib.dump(best_model,'./entire_modelrf_task1_tuned.joblib') # Saving tuned model
 
     # Train and Test RandomForest Model
     start_time = time.time()
@@ -224,7 +225,7 @@ def task_1_gbc(save_type, model_file_path):
         start_time = time.time()
         print("Creating and saving the best model...")
         best_model = GradientBoostingClassifier(**best_hyperparams)
-        joblib.dump(best_model, model_file_path)  # Saving tuned model
+        joblib.dump(best_model,'./entire_modelgbc_task1_tuned.joblib')  # Saving tuned model
 
     # Train and Test Gradient Boosting Descent Model
     start_time = time.time()
@@ -470,7 +471,7 @@ def task_2_rf(save_type, model_file_path):
         start_time = time.time()
         print("Creating and saving the best model...")
         best_model = RandomForestClassifier(**best_hyperparams)
-        joblib.dump(best_model, model_file_path)  # Saving tuned model
+        joblib.dump(best_model,'./entire_modelrf_task2_tuned.joblib')  # Saving tuned model
 
     # Train and Test RandomForest Model
     start_time = time.time()
@@ -516,7 +517,7 @@ def task_2_gbc(save_type, model_file_path):
         start_time = time.time()
         print("Creating and saving the best model...")
         best_model = GradientBoostingClassifier(**best_hyperparams)
-        joblib.dump(best_model, model_file_path)  # Saving tuned model
+        joblib.dump(best_model,'./entire_modelgbc_task2_tuned.joblib')  # Saving tuned model
 
     # Train and Test Gradient Boosting Descent Model
     start_time = time.time()
