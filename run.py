@@ -5,10 +5,9 @@ from convolutional_neural_network import *
 import time
 from random_forest_classifier import *
 from gradient_boosting_classifier import *
+from visualization import *
 import os
-from joblib import dump, load
 import joblib
-
 
 def time_elapsed(seconds):
     """
@@ -51,8 +50,7 @@ def task_1_nn(save_type, model_file_path):
         modelNN = NeuralNetwork(output_size)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=50)
-
+        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=10)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
@@ -61,8 +59,7 @@ def task_1_nn(save_type, model_file_path):
         print("Creating and saving the best model...")
         best_model = NeuralNetwork(output_size=output_size, input_size=input_size,
                                    hidden_size1=best_hyperparams['module__hidden_size1'],
-                                   hidden_size2=best_hyperparams['module__hidden_size2'],
-                                   activation=best_hyperparams['module__activation'])
+                                   hidden_size2=best_hyperparams['module__hidden_size2'])
         torch.save(best_model, './entire_modelnn_task1_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
@@ -70,8 +67,10 @@ def task_1_nn(save_type, model_file_path):
         # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_nn_model(trainLoader, best_model, nbr_epoch=100)
+        best_model, all_loss, all_accuracy, all_epoch = train_nn_model(trainLoader, best_model, nbr_epoch=3)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
+
+        save_training_results_to_csv(all_loss,all_accuracy,all_epoch,"training_result_nn_1.csv")
 
         start_time = time.time()
         print("Saving tuned and trained model...")
@@ -81,7 +80,8 @@ def task_1_nn(save_type, model_file_path):
     # Testing the tuned model
     start_time = time.time()
     print("Testing tuned model...")
-    test_nn_model(testLoader, best_model)
+    y_true, y_pred = test_nn_model(testLoader, best_model)
+    save_test_results_to_csv(y_true,y_pred, "test_result_nn_1.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -133,9 +133,9 @@ def task_1_gru(save_type, model_file_path):
     # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_gru_model(trainLoader, best_model, nbr_epoch=5)
-        # best_model,_,_,_ = train_gru_model(trainLoader, modelGRU, nbr_epoch=10)
+        best_model, all_loss, all_accuracy, all_epoch = train_gru_model(trainLoader, best_model, nbr_epoch=50)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
+        save_training_results_to_csv(all_loss,all_accuracy,all_epoch,"training_result_gru_1.csv")
         start_time = time.time()
         print("Saving tuned and trained model...")
         torch.save(best_model, './entire_modelgru_task1_tuned_trained.pth')  # change path
@@ -144,7 +144,8 @@ def task_1_gru(save_type, model_file_path):
     # Testing the tuned model
     start_time = time.time()
     print("Testing tuned model...")
-    test_gru_model(testLoader, best_model)
+    y_true, y_pred = test_gru_model(testLoader, best_model)
+    save_test_results_to_csv(y_true,y_pred, "training_result_gru_1.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -153,12 +154,6 @@ def task_1_rf(save_type, model_file_path):
 
     :return:
     """
-    # Data preprocessing
-    print("Data Preprocessing...")
-    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 1',
-                                                                             batchsize=151, temp_size=0.3,
-                                                                             test_size=0.5)
-
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -169,6 +164,13 @@ def task_1_rf(save_type, model_file_path):
         best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
+
+        # Data preprocessing
+        print("Data Preprocessing...")
+        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 1',
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
+
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_rf_hyperparameters(X_valid, Y_valid)
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
@@ -177,7 +179,7 @@ def task_1_rf(save_type, model_file_path):
         start_time = time.time()
         print("Creating and saving the best model...")
         best_model = RandomForestClassifier(**best_hyperparams)
-        joblib.dump(best_model, model_file_path)  # Saving tuned model
+        joblib.dump(best_model, model_file_path) # Saving tuned model
 
     # Train and Test RandomForest Model
     start_time = time.time()
@@ -194,13 +196,6 @@ def task_1_gbc(save_type, model_file_path):
 
     :return:
     """
-
-    # Data preprocessing
-    print("Data Preprocessing...")
-    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 1',
-                                                                             batchsize=151, temp_size=0.3,
-                                                                             test_size=0.5)
-
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -208,10 +203,16 @@ def task_1_gbc(save_type, model_file_path):
     if save_type in ['t', 'tt'] and os.path.exists(model_file):
         print(f"Loading saved model from {model_file}")
         best_model = joblib.load(model_file)
-        best_hyperparams=best_model.get_params()    
+        best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
-        
+
+        # Data preprocessing
+        print("Data Preprocessing...")
+        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 1',
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
+
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_gbc_hyperparameters(X_valid, Y_valid)
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
@@ -257,23 +258,29 @@ def task_1_cnn(save_type, model_file_path):
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
     if save_type == 'new':
     # Tune hyperparameters
-        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size=(3, 3, 3), output_size=output_size,
+        print(input_size)
+        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size1=(3, 3, 3), kernel_size2=(3, 3, 3), output_size=output_size,
                                      hidden_size1=64,
-                                     hidden_size2=128, hidden_size3=50, nbr_features=99, stride=1, padding=1)
+                                     hidden_size2=128, hidden_size3=50, stride=1, padding=1)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size)
+        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size,max_epochs=50,cv=3)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
         # Create and save the best model
         start_time = time.time()
         print("Creating and saving the best model...")
-        best_model = ConvNeuralNetwork(input_channels=input_size, kernel_size=best_hyperparams.kernel_size,
-                                       activation_function =best_hyperparams.activation_function,
-                                       output_size=output_size, hidden_size1=best_hyperparams.hidden_size1,
-                                       hidden_size2=best_hyperparams.hidden_size2,
-                                       hidden_size3=best_hyperparams.hidden_size3, nbr_features=99, stride=1, padding=1)
+        best_model = ConvNeuralNetwork(input_channels=3,
+                                       kernel_size1=best_hyperparams['module__kernel_size1'],
+                                       kernel_size2=best_hyperparams['module__kernel_size2'],
+                                       activation_function=best_hyperparams['module__activation_function'],
+                                       output_size=output_size,
+                                       hidden_size1=best_hyperparams['module__hidden_size1'],
+                                       hidden_size2=best_hyperparams['module__hidden_size2'],
+                                       hidden_size3=best_hyperparams['module__hidden_size3'],
+                                       stride=1,
+                                       padding=1)
         torch.save(best_model, './entire_modelcnn_task1_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
@@ -282,8 +289,9 @@ def task_1_cnn(save_type, model_file_path):
         # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_cnn_model(trainLoader, best_model, nbr_epoch=50)
+        best_model, all_loss, all_accuracy, all_epoch = train_cnn_model(trainLoader, best_model, nbr_epoch=50)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
+        save_training_results_to_csv(all_loss,all_accuracy,all_epoch,"training_result_cnn_1.csv")
 
         start_time = time.time()
         print("Saving tuned and trained model..")
@@ -292,7 +300,8 @@ def task_1_cnn(save_type, model_file_path):
 
     start_time = time.time()
     print("Testing tuned model...")
-    test_cnn_model(testLoader, best_model)
+    y_true, y_pred = test_cnn_model(testLoader, best_model)
+    save_test_results_to_csv(y_true,y_pred, "training_result_cnn_1.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -325,7 +334,7 @@ def task_2_nn(save_type, model_file_path):
         modelNN = NeuralNetwork(output_size)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=50)
+        best_hyperparams, best_score = tune_nn_hyperparameters(modelNN, X_valid, Y_valid, output_size, max_epochs=10)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
@@ -334,28 +343,28 @@ def task_2_nn(save_type, model_file_path):
         print("Creating and saving the best model...")
         best_model = NeuralNetwork(output_size=output_size, input_size=input_size,
                                    hidden_size1=best_hyperparams['module__hidden_size1'],
-                                   hidden_size2=best_hyperparams['module__hidden_size2'],
-                                   activation=best_hyperparams['module__activation'])
-        torch.save(best_model, './entire_modelnn_task2_tuned.pth')  
+                                   hidden_size2=best_hyperparams['module__hidden_size2'])
+        torch.save(best_model, './entire_modelnn_task2_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
-        print(f"Best hyperparameters are hidden-size1={best_hyperparams['module__hidden_size1']},hidden_size2={best_hyperparams['module__hidden_size2']}, activation function is {best_hyperparams['module__activation']}")
 
     if save_type in ['new', 't']:
         # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_nn_model(trainLoader, best_model, nbr_epoch=100)
+        best_model, all_loss, all_accuracy, all_epoch = train_nn_model(trainLoader, best_model, nbr_epoch=50)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
+        save_training_results_to_csv(all_loss,all_accuracy,all_epoch,"training_result_nn_2.csv")
 
         start_time = time.time()
         print("Saving tuned and trained model..")
-        torch.save(best_model, './entire_modelnn_task2_tuned_trained.pth') 
+        torch.save(best_model, './entire_modelnn_task2_tuned_trained.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
     # Testing the tuned model
     start_time = time.time()
     print("Testing tuned model...")
-    test_nn_model(testLoader, best_model)
+    y_true, y_pred = test_nn_model(testLoader, best_model)
+    save_test_results_to_csv(y_true,y_pred, "training_result_nn_2.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -399,7 +408,7 @@ def task_2_gru(save_type, model_file_path):
         best_model = GRUNeuralNetwork(output_size=output_size,
                                       hidden_size1=best_hyperparams['module__hidden_size1'],
                                       activation=best_hyperparams['module_activation'])
-        torch.save(best_model, './entire_modelgru_task2_tuned.pth')
+        torch.save(best_model, './entire_modelgru_task2_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
     if save_type in ['new', 't']:
@@ -407,18 +416,21 @@ def task_2_gru(save_type, model_file_path):
         # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_gru_model(trainLoader, best_model, nbr_epoch=5)
-        # best_model,_,_,_ = train_gru_model(trainLoader, modelGRU, nbr_epoch=10)
+        best_model, all_loss, all_accuracy, all_epoch = train_gru_model(trainLoader, best_model, nbr_epoch=50)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
+
+        save_training_results_to_csv(all_loss,all_accuracy,all_epoch,"training_result_gru_2.csv")
+
         start_time = time.time()
         print("Saving tuned and trained model...")
-        torch.save(best_model, './entire_modelgru_task2_tuned_trained.pth')  
+        torch.save(best_model, './entire_modelgru_task2_tuned_trained.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
     # Testing the tuned model
     start_time = time.time()
     print("Testing tuned model...")
-    test_gru_model(testLoader, best_model)
+    y_true, y_pred = test_gru_model(testLoader, best_model)
+    save_test_results_to_csv(y_true,y_pred, "training_result_gru_2.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -427,12 +439,6 @@ def task_2_rf(save_type, model_file_path):
 
     :return:
     """
-
-    # Data preprocessing
-    print("Data Preprocessing...")
-    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 2',
-                                                                             batchsize=151, temp_size=0.3,
-                                                                             test_size=0.5)
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -440,9 +446,15 @@ def task_2_rf(save_type, model_file_path):
     if save_type in ['t', 'tt'] and os.path.exists(model_file):
         print(f"Loading saved model from {model_file}")
         best_model = joblib.load(model_file)
-        best_hyperparams=best_model.get_params()  
+        best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
+
+        # Data preprocessing
+        print("Data Preprocessing...")
+        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 2',
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_rf_hyperparameters(X_valid, Y_valid)
@@ -469,11 +481,6 @@ def task_2_gbc(save_type, model_file_path):
 
     :return:
     """
-     # Data preprocessing
-    print("Data Preprocessing...")
-    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 2',
-                                                                             batchsize=151, temp_size=0.3,
-                                                                             test_size=0.5)
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -481,9 +488,15 @@ def task_2_gbc(save_type, model_file_path):
     if save_type in ['t', 'tt'] and os.path.exists(model_file):
         print(f"Loading saved model from {model_file}")
         best_model = joblib.load(model_file)
-        best_hyperparams=best_model()
+        best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
+
+        # Data preprocessing
+        print("Data Preprocessing...")
+        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 2',
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_gbc_hyperparameters(X_valid, Y_valid)
@@ -503,7 +516,8 @@ def task_2_gbc(save_type, model_file_path):
     print(f"Training and testing time: {time_elapsed(time.time() - start_time)}")
     print(f"Training Accuracy: {accuracy_train}")
     print(f"Testing Accuracy: {accuracy_test}")
-    
+
+
 def task_2_cnn(save_type, model_file_path):
     """
 
@@ -529,23 +543,29 @@ def task_2_cnn(save_type, model_file_path):
     print(f"Data preprocessing time: {time_elapsed(time.time() - start_time)}")
     if save_type == 'new':
         # Tune hyperparameters
-        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size=(3, 3, 3), output_size=output_size,
-                                     hidden_size1=64,
-                                     hidden_size2=128, hidden_size3=50, nbr_features=99, stride=1, padding=1)
+        print(input_size)
+        modelCNN = ConvNeuralNetwork(input_channels=input_size, kernel_size1=(3, 3, 3), kernel_size2=(3, 3, 3), output_size=output_size,
+                                     hidden_size1=128,
+                                     hidden_size2=256, hidden_size3=100, stride=1, padding=1)
         start_time = time.time()
         print("Tuning hyperparameters...")
-        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size)
+        best_hyperparams, best_score = tune_cnn_hyperparameters(modelCNN, X_valid, Y_valid,output_size,max_epochs=50,cv=3)
 
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
 
         # Create and save the best model
         start_time = time.time()
         print("Creating and saving the best model...")
-        best_model = ConvNeuralNetwork(input_channels=input_size, kernel_size=best_hyperparams.kernel_size,
-                                       activation_function =best_hyperparams.activation_function,
-                                       output_size=output_size, hidden_size1=best_hyperparams.hidden_size1,
-                                       hidden_size2=best_hyperparams.hidden_size2,
-                                       hidden_size3=best_hyperparams.hidden_size3, nbr_features=99, stride=1, padding=1)
+        best_model = ConvNeuralNetwork(input_channels=3,
+                                       kernel_size1=best_hyperparams['module__kernel_size1'],
+                                       kernel_size2=best_hyperparams['module__kernel_size2'],
+                                       activation_function=best_hyperparams['module__activation_function'],
+                                       output_size=output_size,
+                                       hidden_size1=best_hyperparams['module__hidden_size1'],
+                                       hidden_size2=best_hyperparams['module__hidden_size2'],
+                                       hidden_size3=best_hyperparams['module__hidden_size3'],
+                                       stride=1,
+                                       padding=1)
         torch.save(best_model, './entire_modelcnn_task2_tuned.pth')  # change path
         print(f"Model creation and saving time: {time_elapsed(time.time() - start_time)}")
 
@@ -554,9 +574,9 @@ def task_2_cnn(save_type, model_file_path):
         # Train the best model
         start_time = time.time()
         print("Training the best model...")
-        best_model, _, _, _ = train_cnn_model(trainLoader, best_model, nbr_epoch=50)
+        best_model, all_loss, all_accuracy, all_epoch = train_cnn_model(trainLoader, best_model, nbr_epoch=3)
         print(f"Training time: {time_elapsed(time.time() - start_time)}")
-
+        save_training_results_to_csv(all_loss,all_accuracy,all_epoch,"training_result_cnn_2.csv")
         start_time = time.time()
         print("Saving tuned and trained model..")
         torch.save(best_model, './entire_modelcnn_task2_tuned_trained.pth')  # change path
@@ -564,10 +584,8 @@ def task_2_cnn(save_type, model_file_path):
 
     start_time = time.time()
     print("Testing tuned model...")
-    test_cnn_model(testLoader, best_model)
-    print(f"Testing time: {time_elapsed(time.time() - start_time)}")
-
-
+    y_true, y_pred = test_cnn_model(testLoader, best_model)
+    save_test_results_to_csv(y_true,y_pred, "test_result_cnn_2.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -726,6 +744,8 @@ def run_task(task, model, save_type):
 if __name__ == "__main__":
     while True:
         try:
+            print("Is AMD GPU available:", torch.cuda.is_available())
+            print("GPU Name:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "No GPU found")
             # Ask the user for the task number
             task_input = input("Enter the task number (1 or 2), 'exit' or ctrl+C to quit: ")
 
@@ -796,3 +816,32 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("\nUser interrupted the program. Exiting...")
             break
+    # List to hold the names of the relevant CSV files
+    csv_training_files = []
+    csv_test_files = []
+    # Directory where the files are located (assuming current directory)
+    directory = '.'
+
+    # Loop through all files in the directory
+    for file in os.listdir(directory):
+        if file.startswith('training_result_') and file.endswith('.csv'):
+            csv_training_files.append(os.path.join(directory, file))
+
+    # Check if we found any files
+    if csv_training_files:
+        # Make sure you have imported plot_accuracy_for_networks from visualization.py
+        plot_accuracy_for_networks(csv_training_files)
+    else:
+        print("No training result CSV files found.")
+
+    for file in os.listdir(directory):
+        if file.startswith('test_result_') and file.endswith('.csv'):
+            csv_test_files.append(os.path.join(directory, file))
+
+    # Check if we found any files
+    if csv_test_files:
+        # Make sure you have imported plot_accuracy_for_networks from visualization.py
+        plot_and_save_confusion_matrix(csv_test_files)
+    else:
+        print("No test result CSV files found.")
+#%%

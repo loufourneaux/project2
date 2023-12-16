@@ -21,15 +21,16 @@ class GRUNeuralNetwork(nn.Module):
         output = self.activation(output)
         output = self.layer2(output)
         return output
-    
+
     def get_activation(self, activation):
-        if activation=='relu': 
+        if activation == 'relu':
             return nn.ReLU()
-        elif activation=='sigmoid':
+        elif activation == 'sigmoid':
             return nn.Sigmoid()
-        elif activation =='tanh':
+        elif activation == 'tanh':
             return nn.Tanh()
-        else: raise ValueError(f"Unsupported activation function")
+        else:
+            raise ValueError(f"Unsupported activation function")
 
 
 def restart_gru_model(learning_rate=0.0001):
@@ -116,7 +117,8 @@ def test_gru_model(testLoader, modelGRU):
     return y_true, y_pred
 
 
-def tune_gru_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1 = 64, threshold=0.0001, patience=5, max_epochs=50, cv=3, activation='relu',
+def tune_gru_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1=64, threshold=0.0001, patience=5,
+                             max_epochs=50, cv=3, activation='relu',
                              verbose=1):
     """
 
@@ -135,7 +137,7 @@ def tune_gru_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1 
     param_grid = {
         'module__hidden_size1': [4096, 2048],
         'optimizer__lr': [0.001],
-        'module__activation':['relu','sigmoid','tanh']
+        'module__activation': ['relu', 'sigmoid', 'tanh']
     }
     modelGRU = model
     modelGRU.eval()
@@ -145,7 +147,7 @@ def tune_gru_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1 
         threshold=threshold,  # Define your threshold
         threshold_mode='abs',  # 'rel' for relative, 'abs' for absolute
         patience=patience,  # Number of epochs to wait after condition is met
-        lower_is_better=False# Number of epochs to wait after condition is met
+        lower_is_better=False  # Number of epochs to wait after condition is met
     )
 
     # Convert the PyTorch model to a skorch classifier to use in GridSearchCV
@@ -160,8 +162,10 @@ def tune_gru_hyperparameters(model, X_valid, y_valid, output_size, hidden_size1 
         callbacks=[early_stopping]
     )
 
-    # Use GridSearchCV for hyperparameter tuning, cv for the number of folds in cross-validation, verbose for the explicit stage of tuning
-    grid_search = GridSearchCV(estimator=classifier, param_grid=param_grid, scoring='accuracy', cv=cv, verbose=2, n_jobs=-1)
+    # Use GridSearchCV for hyperparameter tuning, cv for the number of folds in cross-validation, verbose for the
+    # explicit stage of tuning
+    grid_search = GridSearchCV(estimator=classifier, param_grid=param_grid, scoring='accuracy', cv=cv, verbose=2,
+                               n_jobs=-1)
     # get grid result
     grid_result = grid_search.fit(X_valid, y_valid)
 
