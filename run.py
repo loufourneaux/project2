@@ -184,8 +184,11 @@ def task_1_rf(save_type, model_file_path):
     # Train and Test RandomForest Model
     start_time = time.time()
     print("Training and Testing RandomForest Model...")
-    Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = RF_cv(trainLoader, testLoader, best_hyperparams)
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = RF_cv(trainLoader, testLoader, best_hyperparams)
 
+    y_true = y_train
+    y_pred = y_pred_test
+    save_test_results_to_csv(y_true,y_pred, "test_result_rf_1.csv")
     print(f"Training and testing time: {time_elapsed(time.time() - start_time)}")
     print(f"Training Accuracy: {accuracy_train}")
     print(f"Testing Accuracy: {accuracy_test}")
@@ -226,8 +229,11 @@ def task_1_gbc(save_type, model_file_path):
     # Train and Test Gradient Boosting Descent Model
     start_time = time.time()
     print("Training and Testing Gradient Boosting Descent Model...")
-    Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = GBC_cv(trainLoader, testLoader, best_hyperparams)
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = GBC_cv(trainLoader, testLoader, best_hyperparams)
 
+    y_true = y_train
+    y_pred = y_pred_test
+    save_test_results_to_csv(y_true,y_pred, "test_result_gbc_1.csv")
     print(f"Training and testing time: {time_elapsed(time.time() - start_time)}")
     print(f"Training Accuracy: {accuracy_train}")
     print(f"Testing Accuracy: {accuracy_test}")
@@ -469,7 +475,11 @@ def task_2_rf(save_type, model_file_path):
     # Train and Test RandomForest Model
     start_time = time.time()
     print("Training and Testing RandomForest Model...")
-    Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = RF_cv(trainLoader, testLoader, best_hyperparams)
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = RF_cv(trainLoader, testLoader, best_hyperparams)
+
+    y_true = y_train
+    y_pred = y_pred_test
+    save_test_results_to_csv(y_true,y_pred, "test_result_rf_1.csv")
 
     print(f"Training and testing time: {time_elapsed(time.time() - start_time)}")
     print(f"Training Accuracy: {accuracy_train}")
@@ -511,8 +521,11 @@ def task_2_gbc(save_type, model_file_path):
     # Train and Test Gradient Boosting Descent Model
     start_time = time.time()
     print("Training and Testing Gradient Boosting Descent Model...")
-    Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = GBC_cv(trainLoader, testLoader, best_hyperparams)
+    y_train, y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test = GBC_cv(trainLoader, testLoader, best_hyperparams)
 
+    y_true = y_train
+    y_pred = y_pred_test
+    save_test_results_to_csv(y_true,y_pred, "test_result_gbc_2.csv")
     print(f"Training and testing time: {time_elapsed(time.time() - start_time)}")
     print(f"Training Accuracy: {accuracy_train}")
     print(f"Testing Accuracy: {accuracy_test}")

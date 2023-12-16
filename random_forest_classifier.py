@@ -36,7 +36,7 @@ def RF_cv2(trainLoader, testLoader, cv=5, n_estimators=100, random_state=100):
     accuracy_train = accuracy_score(Y_train, Y_pred_cv)
     accuracy_test = accuracy_score(Y_test, y_pred_test)
 
-    return Y_pred_cv, y_pred_test, accuracy_train, accuracy_test
+    return Y_train, Y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test
 
 
 def RF_cv(trainLoader, testLoader, best_params):
@@ -71,7 +71,7 @@ def RF_cv(trainLoader, testLoader, best_params):
     accuracy_train = accuracy_score(Y_train, Y_pred_cv)
     accuracy_test = accuracy_score(Y_test, y_pred_test)
 
-    return Y_pred_cv, y_pred_test, accuracy_train, accuracy_test
+    return Y_train, Y_test, Y_pred_cv, y_pred_test, accuracy_train, accuracy_test
 
 
 def tune_rf_hyperparameters(X_validation, Y_validation, cv=5, verbose=2, n_jobs=-1):
