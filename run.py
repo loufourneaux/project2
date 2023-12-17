@@ -154,6 +154,11 @@ def task_1_rf(save_type, model_file_path):
 
     :return:
     """
+    # Data preprocessing
+    print("Data Preprocessing...")
+    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 1',
+                                                                             batchsize=152, temp_size=0.3,
+                                                                             test_size=0.5)
 
     model_file = ''
     if save_type in ['t', 'tt']:
@@ -165,13 +170,6 @@ def task_1_rf(save_type, model_file_path):
         best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
-
-        # Data preprocessing
-        print("Data Preprocessing...")
-        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 1',
-                                                                             batchsize=152, temp_size=0.3,
-                                                                             test_size=0.5)
-
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_rf_hyperparameters(X_valid, Y_valid)
         print(f"Tuning time: {time_elapsed(time.time() - start_time)}")
@@ -200,6 +198,11 @@ def task_1_gbc(save_type, model_file_path):
 
     :return:
     """
+    # Data preprocessing
+    print("Data Preprocessing...")
+    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 1',
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -210,12 +213,6 @@ def task_1_gbc(save_type, model_file_path):
         best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
-
-        # Data preprocessing
-        print("Data Preprocessing...")
-        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 1',
-                                                                             batchsize=151, temp_size=0.3,
-                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_gbc_hyperparameters(X_valid, Y_valid)
@@ -446,6 +443,11 @@ def task_2_rf(save_type, model_file_path):
 
     :return:
     """
+    # Data preprocessing
+    print("Data Preprocessing...")
+    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 2',
+                                                                             batchsize=152, temp_size=0.3,
+                                                                             test_size=0.5)
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -456,12 +458,6 @@ def task_2_rf(save_type, model_file_path):
         best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
-
-        # Data preprocessing
-        print("Data Preprocessing...")
-        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='RF', task_name='Task 2',
-                                                                             batchsize=152, temp_size=0.3,
-                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_rf_hyperparameters(X_valid, Y_valid)
@@ -492,6 +488,11 @@ def task_2_gbc(save_type, model_file_path):
 
     :return:
     """
+    # Data preprocessing
+    print("Data Preprocessing...")
+    trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 2',
+                                                                             batchsize=151, temp_size=0.3,
+                                                                             test_size=0.5)
     model_file = ''
     if save_type in ['t', 'tt']:
         model_file = model_file_path
@@ -502,12 +503,6 @@ def task_2_gbc(save_type, model_file_path):
         best_hyperparams=best_model.get_params()
     else:
         start_time = time.time()
-
-        # Data preprocessing
-        print("Data Preprocessing...")
-        trainLoader, testLoader, X_valid, Y_valid, _, _ = data_preprocessing(model_name='GBC', task_name='Task 2',
-                                                                             batchsize=151, temp_size=0.3,
-                                                                             test_size=0.5)
 
         print("Tuning hyperparameters...")
         best_hyperparams, best_score = tune_gbc_hyperparameters(X_valid, Y_valid)
