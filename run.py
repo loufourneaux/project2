@@ -145,7 +145,7 @@ def task_1_gru(save_type, model_file_path):
     start_time = time.time()
     print("Testing tuned model...")
     y_true, y_pred = test_gru_model(testLoader, best_model)
-    save_test_results_to_csv(y_true,y_pred, "training_result_gru_1.csv")
+    save_test_results_to_csv(y_true,y_pred, "test_result_gru_1.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -305,7 +305,7 @@ def task_1_cnn(save_type, model_file_path):
     start_time = time.time()
     print("Testing tuned model...")
     y_true, y_pred = test_cnn_model(testLoader, best_model)
-    save_test_results_to_csv(y_true,y_pred, "training_result_cnn_1.csv")
+    save_test_results_to_csv(y_true,y_pred, "test_result_cnn_1.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -368,7 +368,7 @@ def task_2_nn(save_type, model_file_path):
     start_time = time.time()
     print("Testing tuned model...")
     y_true, y_pred = test_nn_model(testLoader, best_model)
-    save_test_results_to_csv(y_true,y_pred, "training_result_nn_2.csv")
+    save_test_results_to_csv(y_true,y_pred, "test_result_nn_2.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
@@ -434,7 +434,7 @@ def task_2_gru(save_type, model_file_path):
     start_time = time.time()
     print("Testing tuned model...")
     y_true, y_pred = test_gru_model(testLoader, best_model)
-    save_test_results_to_csv(y_true,y_pred, "training_result_gru_2.csv")
+    save_test_results_to_csv(y_true,y_pred, "test_result_gru_2.csv")
     print(f"Testing time: {time_elapsed(time.time() - start_time)}")
 
 
